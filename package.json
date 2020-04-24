@@ -1,0 +1,19 @@
+{
+  "name": "bookmarks-app",
+  "version": "1.0.0",
+  "description": "Laboratory 7 for class TC-2026 Web Applications Development.",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon server.js"
+  },
+  "author": "Jose Juan Zavala Iglesias | A01281362",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "morgan": "^1.10.0",
+    "nodemon": "^2.0.3",
+    "uuid": "^7.0.3"
+  }
+}
