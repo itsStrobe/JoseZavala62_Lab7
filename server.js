@@ -1,7 +1,9 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
+const mongoose = require( 'mongoose' );
 const uuid = require('uuid');
+const {Bookmark} = require('./models/bookmarkModel');
 
 const app = express();
 const jsonParser = bodyParser.json();
@@ -10,17 +12,21 @@ const tokenValidation = require('./middleware/validateToken');
 app.use(morgan('dev'));
 app.use(tokenValidation);
 
-let bookmarksDb = [
-];
-
-// c -> GET request of all bookmarks should go to /bookmarks
+// c -> GET request of all bookmarks should go to /bookmarks => Added Mongoose Functionality
 app.get('/bookmarks-api/bookmarks',  (req, res) => {
     console.log("Getting all Bookmarks");
-
-    return res.status(200).json(bookmarksDb);
+    
+    Bookmark.getAll()
+        .then(result => {
+            return res.status(200).json(result);
+        })
+        .catch(err => {
+            res.statusMessage = "Something went wrong when accessing the DB. Please try again later.";
+            return res.status(500).end();
+        })
 })
 
-// d -> GET by title requests should go to /bookmark?title=value
+// d -> GET by title requests should go to /bookmark?title=value => Added Mongoose Functionality
 app.get('/bookmarks-api/bookmark',  (req, res) => {
     console.log("Getting Bookmarks by title using the query string.");
     console.log(req.query);
@@ -32,21 +38,22 @@ app.get('/bookmarks-api/bookmark',  (req, res) => {
         return res.status(406).end();
     }
 
-    let results = bookmarksDb.filter((bookmark) => {
-        if(bookmark.title == title){
-            return bookmark;
-        }
-    });
+    Bookmark.getByTitle(title)
+        .then(result => {
+            if(!result){
+                res.statusMessage = `There is no recorded bookmarks with the 'title=${title}'.`;
+                return res.status(404).end();
+            }
 
-    if(!result){
-        res.statusMessage = `There is no recorded bookmarks with the 'title=${title}'.`;
-        return res.status(404).end();
-    }
+            return res.status(200).json(result);
+        })
+        .catch(err => {
+            res.statusMessage = `Something went wrong when accessing the DB. Please try again later. ${err.errmsg}`;
+            return res.status(500).end();
+        });
+});
 
-    return res.status(200).json(result);
-})
-
-// e -> POST requests of a bookmark should go to /bookmarks
+// e -> POST requests of a bookmark should go to /bookmarks => Added Mongoose Functionality
 app.post('/bookmarks-api/bookmark', jsonParser, (req, res) => {
     console.log("Adding a new bookmark to the list.");
     console.log("Body", req.body );
@@ -103,44 +110,58 @@ app.post('/bookmarks-api/bookmark', jsonParser, (req, res) => {
         return res.status(409).end();
     }
 
+    let newBookmarkId = uuid.v4();
+
     let newBookmark = {
-        id: uuid.v4(),
+        id: newBookmarkId,
         title: title.toString(),
         description: description.toString(),
         url: url.toString(),
         rating: rating
     }
 
-    bookmarksDb.push(newBookmark);
-
-    return res.status(201).json(newBookmark);
+    Bookmark
+        .createBookmark(newBookmark)
+        .then(result => {
+            if(result.errmsg){
+                res.statusMessage = `A bookmark with id=${newBookmarkId} already exists. ${result.errmsg}`;
+                return res.status(409).end();
+            }
+            return res.status(201).json(result); 
+        })
+        .catch(err => {
+            res.statusMessage = `Something went wrong when accessing the DB. Please try again later. ${err.message}`;
+            return res.status(500).end();
+        });
 });
 
 
-// f -> DELETE requests should go to /bookmark/:id
+// f -> DELETE requests should go to /bookmark/:id => Added Mongoose Functionality
 app.delete('/bookmarks-api/bookmark/:id', ( req, res ) => {
     console.log("Deleting a Bookmark by id using the integrated param.");
     console.log(req.params);
 
     let id = req.params.id;
 
-    let bookmarkToRemove = bookmarksDb.findIndex((bookmark) => {
-        if(bookmark.id === id){
-            return true;
-        }
-    });
-
-    if(bookmarkToRemove < 0){
-        res.statusMessage = `There are no Bookmarks with the provided 'id=${id}'.`;
-        return res.status(404).end();
-    }
-
-    bookmarksDb.splice(bookmarkToRemove, 1);
-    return res.status(200).end();
+    Bookmark.deleteBookmark(id)
+        .then(result => {
+            if(result.deletedCount > 0)
+            {
+                return res.status(200).end();
+            }
+            else{
+                res.statusMessage = `There are no Bookmarks with the provided 'id=${id}'.`;
+                return res.status(404).end();
+            }
+        })
+        .catch(err => {
+            res.statusMessage = `Something went wrong when accessing the DB. Please try again later. ${err.errmsg}`;
+            return res.status(500).end();
+        });
 });
 
 
-// g -> PATCH requests should go to /bookmark/:id
+// g -> PATCH requests should go to /bookmark/:id => Added Mongoose Functionality
 app.patch('/bookmarks-api/bookmark/:id', jsonParser, (req, res) => {
     console.log("Patching a Bookmark by id using the Integrated Param and Body.");
 
@@ -165,45 +186,44 @@ app.patch('/bookmarks-api/bookmark/:id', jsonParser, (req, res) => {
         return res.status(409).end();
     }
 
-    let bookmarkToEdit = bookmarksDb.findIndex((bookmark) => {
-        if(bookmark.id === param_id){
-            return true;
-        }
-    });
-
-    if(bookmarkToEdit < 0){
-        res.statusMessage = `There are no Bookmarks with the provided 'id=${param_id}'.`;
-        return res.status(404).end();
-    }
-
     // Update Provided Parameters
-    for(field in updatedBookmarkFields){
-        console.log(`Updating entry ${param_id} with '${field}=${updatedBookmarkFields[field]}'`);
-        bookmarksDb[bookmarkToEdit][field] = updatedBookmarkFields[field];
-    }
-    
-    return res.status(202).json(bookmarksDb[bookmarkToEdit]);
+    Bookmark.updateBookmark(param_id, updatedBookmarkFields)
+        .then(result => {
+            if(!result){
+                res.statusMessage = `There are no Bookmarks with the provided 'id=${param_id}'.`;
+                return res.status(404).end();
+            }
+
+            return res.status(202).json(result);
+        })
+        .catch(err => {
+            res.statusMessage = `Something went wrong when accessing the DB. Please try again later. ${err.errmsg}`;
+            return res.status(500).end();
+        });
 });
 
 app.listen(8080, () => {
-    // Preload Bookmarks
-    bookmarksDb.push(
-        {
-            id: uuid.v4(),
-            title: "SoundOnSound",
-            description: "Sound on Sound is an independently owned monthly music technology magazine published by SOS Publications Group, based in Cambridge, United Kingdom.",
-            url: "www.soundonsound.com",
-            rating: 4
-        },
-
-        {
-            id: uuid.v4(),
-            title: "arXiv",
-            description: "arXiv is an open-access repository of electronic preprints approved for posting after moderation, but not full peer review.",
-            url: "arxiv.org",
-            rating: 5
-        }
-    )
+    // Start Mongoose Server Connection
+    new Promise((resolve, reject) => {
+        const settings = {
+            useNewUrlParser: true, 
+            useUnifiedTopology: true,
+            useCreateIndex: true,
+            useFindAndModify: false
+        };
+        mongoose.connect('mongodb://localhost/bookmarksdb', settings, (err) => {
+            if(err){
+                return reject(err);
+            }
+            else{
+                console.log("Database connected successfully.");
+                return resolve();
+            }
+        })
+    })
+    .catch(err => {
+        console.log(err);
+    });
 
     console.log("This server is running on port 8080");
 });
