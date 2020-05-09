@@ -21,7 +21,7 @@ function getValueFromNumericField(field){
 }
 
 function getAllBookmarks(){
-    let req_url = `https://localhost:${PORT}/bookmarks-api/bookmarks`;
+    let req_url = `/bookmarks-api/bookmarks`;
     let settings = {
         method : 'GET',
         headers : {
@@ -47,7 +47,7 @@ function getAllBookmarks(){
 }
 
 function getBookmarksByTitle(title){
-    let req_url = `https://localhost:${PORT}/bookmarks-api/bookmark?title=${title}`;
+    let req_url = `/bookmarks-api/bookmark?title=${title}`;
 
     let settings = {
         method : 'GET',
@@ -72,7 +72,7 @@ function getBookmarksByTitle(title){
 }
 
 function addBookmark(title, description, url, rating){
-    let req_url = `https://localhost:${PORT}/bookmarks-api/bookmark`;
+    let req_url = `/bookmarks-api/bookmark`;
 
     let data = {
         title : title,
@@ -106,7 +106,7 @@ function addBookmark(title, description, url, rating){
 }
 
 function deleteBookmarkById(id){
-    let req_url = `https://localhost:${PORT}/bookmarks-api/bookmark/${id}`;
+    let req_url = `/bookmarks-api/bookmark/${id}`;
 
     let settings = {
         method : 'DELETE',
@@ -131,7 +131,7 @@ function deleteBookmarkById(id){
 }
 
 function patchBookmark(id, title, description, url, rating){
-    let req_url = `https://localhost:${PORT}/bookmarks-api/bookmark/${id}`;
+    let req_url = `/bookmarks-api/bookmark/${id}`;
 
     let data = {
         id : id,
