@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Bookmark Keeper</title>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="./css/index.css" />
+</head>
+<body>
+	<header>
+		<h1>Bookmark Keeper</h1>
+	</header>
+	<main>
+        <section class="formSection">
+            <section class="bookmarkForm">
+                <h2>Get All Bookmarks</h2>
+                <form id="getBookmarks">
+                    <button class="submitBtn" type="submit">
+                        Get All Bookmarks
+                    </button>
+                </form>
+            </section>
+            <section class="bookmarkForm">
+                <h2>Get Bookmark by Title</h2>
+                <form id="getBookmarksByTitle">
+                    <label for="getBookmarkTitle">
+                        Title:
+                    </label>
+                    <input type="text" id="getBookmarkTitle"/>
+                    <button class="submitBtn" type="submit">
+                        Submit
+                    </button>
+                </form>
+            </section>
+            <section class="bookmarkForm">
+                <h2>Add a New Bookmark</h2>
+                <form id="postBookmark">
+                    <label for="postBookmarkTitle">
+                        Title:
+                    </label>
+                    <input type="text" id="postBookmarkTitle"/>
+                    <label for="postBookmarkDescription">
+                        Description:
+                    </label>
+                    <input type="text" id="postBookmarkDescription"/>
+                    <label for="postBookmarkUrl">
+                        URL:
+                    </label>
+                    <input type="text" id="postBookmarkUrl"/>
+                    <label for="postBookmarkRating">
+                        Rating:
+                    </label>
+                    <input type="text" id="postBookmarkRating"/>
+                    <button class="submitBtn" type="submit">
+                        Submit
+                    </button>
+                </form>
+            </section>
+            <section class="bookmarkForm">
+                <h2>Delete Bookmark by Id</h2>
+                <form id="deleteBookmarkById">
+                    <label for="deleteBookmarkId">
+                        Id:
+                    </label>
+                    <input type="text" id="deleteBookmarkId"/>
+                    <button class="submitBtn" type="submit">
+                        Submit
+                    </button>
+                </form>
+            </section>
+            <section class="bookmarkForm">
+                <h2>Update Bookmark by Id</h2>
+                <form id="patchBookmark">
+                    <label for="patchBookmarkId">
+                        Id:
+                    </label>
+                    <input type="text" id="patchBookmarkId"/>
+                    <label for="patchBookmarkTitle">
+                        Title:
+                    </label>
+                    <input type="text" id="patchBookmarkTitle"/>
+                    <label for="patchBookmarkDescription">
+                        Description:
+                    </label>
+                    <input type="text" id="patchBookmarkDescription"/>
+                    <label for="patchBookmarkUrl">
+                        URL:
+                    </label>
+                    <input type="text" id="patchBookmarkUrl"/>
+                    <label for="patchBookmarkRating">
+                        Rating:
+                    </label>
+                    <input type="text" id="patchBookmarkRating"/>
+                    <button class="submitBtn" type="submit">
+                        Submit
+                    </button>
+                </form>
+            </section>
+        </section>
+        <section class="resultSection">
+            <h2>Query Results</h2>
+        </section>
+	</main>
+
+    <script src="./js/index.js"></script>
+</body>
+</html>

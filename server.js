@@ -2,13 +2,17 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const mongoose = require( 'mongoose' );
+const cors = require('./middleware/cors');
 const uuid = require('uuid');
 const {Bookmark} = require('./models/bookmarkModel');
+const {PORT, DATABASE_URL} = require('./config');
 
 const app = express();
 const jsonParser = bodyParser.json();
 const tokenValidation = require('./middleware/validateToken');
 
+app.use(cors);
+app.use(express.static("public"));
 app.use(morgan('dev'));
 app.use(tokenValidation);
 
@@ -105,8 +109,8 @@ app.post('/bookmarks-api/bookmark', jsonParser, (req, res) => {
         return res.status(409).end();
     }
 
-    if(typeof(rating) !== 'number' || (rating < 0 || rating > 5)){
-        res.statusMessage = "The 'rating' MUST be a number between 0-5.";
+    if(typeof(rating) !== 'number'){
+        res.statusMessage = "The 'rating' MUST be a number.";
         return res.status(409).end();
     }
 
@@ -185,9 +189,20 @@ app.patch('/bookmarks-api/bookmark/:id', jsonParser, (req, res) => {
         res.statusMessage = `'id=${param_id}' in Path does not match 'id=${body_id}' in Request Body.`;
         return res.status(409).end();
     }
+    
+    // Create Object to Update Fields
+    let newFields = {};
+
+    for (let field in updatedBookmarkFields) {
+        if (updatedBookmarkFields.hasOwnProperty(field)) {
+            if(updatedBookmarkFields[field] !== "" && updatedBookmarkFields[field] != null){
+                newFields[field] = updatedBookmarkFields[field];
+            }
+        }
+    }
 
     // Update Provided Parameters
-    Bookmark.updateBookmark(param_id, updatedBookmarkFields)
+    Bookmark.updateBookmark(param_id, newFields)
         .then(result => {
             if(!result){
                 res.statusMessage = `There are no Bookmarks with the provided 'id=${param_id}'.`;
@@ -202,7 +217,7 @@ app.patch('/bookmarks-api/bookmark/:id', jsonParser, (req, res) => {
         });
 });
 
-app.listen(8080, () => {
+app.listen(PORT, () => {
     // Start Mongoose Server Connection
     new Promise((resolve, reject) => {
         const settings = {
@@ -211,7 +226,7 @@ app.listen(8080, () => {
             useCreateIndex: true,
             useFindAndModify: false
         };
-        mongoose.connect('mongodb://localhost/bookmarksdb', settings, (err) => {
+        mongoose.connect(DATABASE_URL, settings, (err) => {
             if(err){
                 return reject(err);
             }
@@ -225,5 +240,5 @@ app.listen(8080, () => {
         console.log(err);
     });
 
-    console.log("This server is running on port 8080");
+    console.log(`This server is running on port ${PORT}`);
 });
