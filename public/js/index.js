@@ -183,7 +183,7 @@ function patchBookmark(id, title, description, url, rating){
 
 function displayResult(data){
     let results = document.querySelector('.resultSection');
-    results.innerHTML = "";
+    results.innerHTML = "<h2 class=\"sectionHeader\">RESULTS</h2>";
     results.innerHTML += 
         `<div class=\"bookmark\">
             <h3>${data['title']}</h3>
@@ -196,9 +196,7 @@ function displayResult(data){
 
 function displayResults(data){
     let results = document.querySelector('.resultSection');
-    results.innerHTML = "";
-
-    console.log(data);
+    results.innerHTML = "<h2 class=\"sectionHeader\">RESULTS</h2>";
     
     data.forEach(bookmark => {
         results.innerHTML += 
